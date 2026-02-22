@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dream Housing Finance — Loan Eligibility</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --surface: rgba(15, 23, 42, 0.7);
+      --border: rgba(148, 163, 184, 0.12);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #f59e0b;
+      --accent-hover: #fbbf24;
+      --approved: #10b981;
+      --denied: #ef4444;
+      --input-bg: rgba(15, 23, 42, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background pattern */
+    .bg {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245, 158, 11, 0.08), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 50%, rgba(59, 130, 246, 0.05), transparent),
+        radial-gradient(ellipse 50% 30% at 0% 80%, rgba(16, 185, 129, 0.04), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    .sub {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(12px);
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.02em;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 1rem 1.5rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0a0e17;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .result-wrap {
+      margin-top: 2rem;
+      display: none;
+    }
+
+    .result-wrap.visible {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card {
+      padding: 1.75rem;
+      border-radius: 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .result-card.approved {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    .result-card.denied {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .result-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+    }
+
+    .result-card.approved .result-icon {
+      background: rgba(16, 185, 129, 0.25);
+      color: var(--approved);
+    }
+
+    .result-card.denied .result-icon {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--denied);
+    }
+
+    .result-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .result-card.approved .result-title { color: var(--approved); }
+    .result-card.denied .result-title { color: var(--denied); }
+
+    .result-sub {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .result-score {
+      margin-top: 0.75rem;
+      padding: 0.6rem 0.9rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .result-score span { color: var(--accent); }
+
+    .numbers-used {
+      margin-top: 1rem;
+      padding: 0.9rem;
+      background: rgba(0,0,0,0.15);
+      border-radius: 10px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .numbers-used h4 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .numbers-used table { width: 100%; border-collapse: collapse; }
+    .numbers-used td { padding: 0.2rem 0; }
+    .numbers-used td:first-child { color: var(--text); font-weight: 500; }
+    .numbers-used td:last-child { text-align: right; color: var(--accent); }
+
+    .explanation {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .explanation h4 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .explanation-list {
+      list-style: none;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .explanation-list li {
+      padding: 0.35rem 0;
+      padding-left: 1.25rem;
+      position: relative;
+    }
+
+    .explanation-list li::before {
+      position: absolute;
+      left: 0;
+    }
+
+    .explanation-list.helped li::before {
+      content: '✓';
+      color: var(--approved);
+      font-weight: 700;
+    }
+
+    .explanation-list.reduced li::before {
+      content: '○';
+      color: var(--denied);
+      font-weight: 700;
+    }
+
+    .explanation-block {
+      margin-bottom: 1rem;
+    }
+
+    .explanation-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .explanation-list li.muted {
+      color: var(--text-muted);
+    }
+
+    .error-msg {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      color: #fca5a5;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .error-msg.visible { display: block; }
+
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="container">
+    <header>
+      <div class="logo">Dream Housing Finance</div>
+      <h1>Loan eligibility check</h1>
+      <p class="sub">Enter your details to get an instant prediction</p>
+    </header>
+
+    <div class="card">
+      <form id="form" class="form-grid">
+        <div class="row2">
+          <div>
+            <label for="Married">Marital status</label>
+            <select id="Married" name="Married" required>
+              <option value="No">Single</option>
+              <option value="Yes">Married</option>
+            </select>
+          </div>
+          <div>
+            <label for="Education">Education</label>
+            <select id="Education" name="Education" required>
+              <option value="Graduate">Graduate</option>
+              <option value="Not Graduate">Not Graduate</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="ApplicantIncome">Applicant income (₹/month)</label>
+          <input type="number" id="ApplicantIncome" name="ApplicantIncome" min="0" placeholder="e.g. 5000" required>
+        </div>
+        <div>
+          <label for="CoapplicantIncome">Co-applicant income (₹/month)</label>
+          <input type="number" id="CoapplicantIncome" name="CoapplicantIncome" min="0" placeholder="e.g. 2000" value="0">
+        </div>
+
+        <div class="row2">
+          <div>
+<label for="LoanAmount">Loan amount (₹)</label>
+          <input type="number" id="LoanAmount" name="LoanAmount" min="1000" step="1000" placeholder="e.g. 120000 = ₹1.2 lakh" required title="Enter amount in rupees, e.g. 120000 for ₹1.2 lakh">
+          </div>
+          <div>
+            <label for="Loan_Amount_Term">Loan term (months)</label>
+            <input type="number" id="Loan_Amount_Term" name="Loan_Amount_Term" min="12" placeholder="360" value="360">
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
+            <label for="Credit_History">Credit history</label>
+            <select id="Credit_History" name="Credit_History" required>
+              <option value="1">Meets guidelines</option>
+              <option value="0">No / unknown</option>
+            </select>
+          </div>
+          <div>
+            <label for="Property_Area">Property area</label>
+            <select id="Property_Area" name="Property_Area" required>
+              <option value="Urban">Urban</option>
+              <option value="Semiurban">Semiurban</option>
+              <option value="Rural">Rural</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">Check eligibility</button>
+      </form>
+
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="result-wrap" id="resultWrap">
+        <div class="result-card" id="resultCard">
+          <div class="result-icon" id="resultIcon"></div>
+          <div class="result-title" id="resultTitle"></div>
+          <div class="result-sub" id="resultSub"></div>
+          <div class="result-score" id="resultScore"></div>
+          <div class="numbers-used" id="numbersUsed">
+            <h4>Numbers used for this prediction</h4>
+            <table id="numbersTable"></table>
+          </div>
+          <div class="explanation" id="explanation">
+            <div class="explanation-block" id="helpedBlock">
+              <h4>Factors that supported eligibility</h4>
+              <ul class="explanation-list helped" id="helpedList"></ul>
+            </div>
+            <div class="explanation-block" id="reducedBlock">
+              <h4>Factors that reduced eligibility</h4>
+              <ul class="explanation-list reduced" id="reducedList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>Powered by ML · Dream Housing Finance</footer>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultWrap = document.getElementById('resultWrap');
+    const resultCard = document.getElementById('resultCard');
+    const resultIcon = document.getElementById('resultIcon');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultSub = document.getElementById('resultSub');
+    const errorMsg = document.getElementById('errorMsg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.classList.remove('visible');
+      resultWrap.classList.remove('visible');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Checking…';
+
+      const payload = {
+        Married: form.Married.value,
+        Education: form.Education.value,
+        ApplicantIncome: form.ApplicantIncome.value,
+        CoapplicantIncome: form.CoapplicantIncome.value || 0,
+        LoanAmountRupees: form.LoanAmount.value,
+        Loan_Amount_Term: form.Loan_Amount_Term.value || 360,
+        Credit_History: form.Credit_History.value,
+        Property_Area: form.Property_Area.value
+      };
+
+      try {
+        const res = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorMsg.textContent = data.error || 'Something went wrong';
+          errorMsg.classList.add('visible');
+          return;
+        }
+
+        const approved = data.Loan_Status === 'Y';
+        resultCard.classList.remove('approved', 'denied');
+        resultCard.classList.add(approved ? 'approved' : 'denied');
+        resultIcon.textContent = approved ? '✓' : '✕';
+        resultTitle.textContent = approved ? 'Eligible' : 'Not eligible';
+        resultSub.textContent = approved
+          ? 'Based on your details, you meet our current eligibility criteria.'
+          : 'Based on your details, we are unable to approve at this time.';
+
+        const scoreEl = document.getElementById('resultScore');
+        const prob = data.probability;
+        if (prob != null && !isNaN(prob)) {
+          const pct = (prob * 100).toFixed(1);
+          scoreEl.textContent = 'Eligibility score: ';
+          scoreEl.innerHTML = 'Eligibility score: <span>' + pct + '%</span> (model confidence)';
+          scoreEl.style.display = 'block';
+        } else {
+          scoreEl.style.display = 'none';
+        }
+
+        const inputs = data.inputs_used || {};
+        const labels = {
+          ApplicantIncome: 'Applicant income (₹/month)',
+          CoapplicantIncome: 'Co-applicant income (₹/month)',
+          LoanAmount: 'Loan amount used (thousands for model)',
+          Loan_Amount_Term: 'Loan term (months)',
+          Credit_History: 'Credit history',
+          Property_Area: 'Property area',
+          Married: 'Marital status',
+          Education: 'Education'
+        };
+        const creditVal = { '1': 'Meets guidelines', '0': 'No / unknown' };
+        const rows = ['ApplicantIncome', 'CoapplicantIncome', 'LoanAmount', 'Loan_Amount_Term', 'Credit_History', 'Property_Area', 'Married', 'Education'];
+        let tableHtml = '';
+        rows.forEach(function(k) {
+          let v = inputs[k];
+          if (v === undefined || v === null) v = '—';
+          if (k === 'Credit_History') v = creditVal[v] || v;
+          tableHtml += '<tr><td>' + (labels[k] || k) + '</td><td>' + v + '</td></tr>';
+        });
+        document.getElementById('numbersTable').innerHTML = tableHtml;
+
+        const explanation = data.explanation || {};
+        const helped = explanation.factors_that_helped || [];
+        const reduced = explanation.factors_that_reduced || [];
+        const helpedList = document.getElementById('helpedList');
+        const reducedList = document.getElementById('reducedList');
+        const helpedBlock = document.getElementById('helpedBlock');
+        const reducedBlock = document.getElementById('reducedBlock');
+        helpedList.innerHTML = helped.length ? helped.map(s => '<li>' + s + '</li>').join('') : '<li class="muted">— None</li>';
+        reducedList.innerHTML = reduced.length ? reduced.map(s => '<li>' + s + '</li>').join('') : '<li class="muted">— None</li>';
+        helpedBlock.style.display = 'block';
+        reducedBlock.style.display = 'block';
+
+        resultWrap.classList.add('visible');
+      } catch (err) {
+        errorMsg.textContent = 'Network error. Is the server running?';
+        errorMsg.classList.add('visible');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Check eligibility';
+      }
+    });
+  </script>
+</body>
+</html>

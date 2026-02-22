@@ -1,0 +1,15 @@
+[
+  "ApplicantIncome",
+  "CoapplicantIncome",
+  "LoanAmount",
+  "Loan_Amount_Term",
+  "Credit_History",
+  "LoanAmount_log",
+  "Married_No",
+  "Married_Yes",
+  "Education_Graduate",
+  "Education_Not Graduate",
+  "Property_Area_Rural",
+  "Property_Area_Semiurban",
+  "Property_Area_Urban"
+]
