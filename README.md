@@ -1,4 +1,3 @@
-# Loan-Eligibility-Prediction-System-Using-Machine-Learning
 # Loan Prediction System for Banks
 ![](Images/1.%20Loan%20Prediction%20System.png)
 
